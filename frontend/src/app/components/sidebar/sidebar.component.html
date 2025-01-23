@@ -8,16 +8,33 @@
       <!-- <ul> -->
        <div style="display: flex;;flex-direction: column;margin-left: 10px;gap: 10px;">
         <label>Feature Layers</label>
-        <input placeholder="All Feature Layers" style="width: 220px;height: 30px;">
-
+        
+        <select style="width: 230px; height: 40px;" (change)="onLayerSelect($event)">
+          <option value="">Select Feature Layer</option>
+          @for (layer of selectorfeaturlayers(); track layer) {
+            <option [value]="layer">{{ layer }}</option>
+          }
+        </select>
+        
         <label>Attributes</label>
-        <input placeholder="None" style="width: 220px;height: 30px;">
+        <select  style="width: 230px;height: 40px;" (change)="onAttributeSelect($event)">
+          <option value="">None</option>
+          @for (attribute of selectorattributes(); track attribute) {
+            <option [value]="attribute">{{ attribute }}</option>
+          }
+        </select>
+      
 
         <label>Operators</label>
-        <input placeholder="None" style="width: 220px;height: 30px;"><br/>
+        <select  style="width: 230px;height: 40px;">
+          <option value="">None</option>
+          @for (operator of selectoroperators(); track operator) {
+            <option [value]="operator">{{ operator }}</option>
+          }
+        </select>
 
         <label>Enter Value</label>
-        <input placeholder="Enter Value" style="width: 220px;height: 30px;">
+        <input placeholder="Enter Value" style="border-radius: 5px;width: 220px;height: 30px;">
       </div>
 
       <div style="display:flex;left: 40px;position: relative;;margin-top: 10px;">

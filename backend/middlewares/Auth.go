@@ -158,7 +158,7 @@ func GenerateRefreshToken(claim TokenClaimStruct) (string, error) {
 // CORS middleware function definition
 func CorsMiddleware() gin.HandlerFunc {
 	// Define allowed origins as a comma-separated string
-	originsString := "http://localhost:3000"
+	originsString := "http://localhost:4200"
 	var allowedOrigins []string
 	if originsString != "" {
 		// Split the originsString into individual origins and store them in allowedOrigins slice

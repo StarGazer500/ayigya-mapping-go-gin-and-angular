@@ -1,12 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input,signal, Output,AfterViewInit } from '@angular/core';
 import { CommonModule} from '@angular/common';
+import { SelectorfeaturlayersService } from '../../service/selectorfeaturlayers.service';
+import {SelectoratrributesService } from '../../service/selectoratrributes.service'
+import {SelectoroperatorsService} from '../../service/selectoroperators.service'
 
-interface MenuItem {
-  icon: string;
-  label: string;
-  children?: MenuItem[];
-  isOpen?: boolean;
-}
 
 
 
@@ -16,43 +13,85 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
 })
-export class SidebarComponent {
+export class SidebarComponent implements AfterViewInit{
+
+  constructor(private selectorService: SelectorfeaturlayersService,private attributeselector:SelectoratrributesService,private operatorselector:SelectoroperatorsService ) {}
   @Input() isSidebarCollapsed = false;
-  @Output() sidebarToggle = new EventEmitter<void>();
+ 
+  selectorfeaturlayers = signal([]);
+  selectorattributes = signal([]);
+  selectoroperators = signal([]);
 
-  menuItems: MenuItem[] = [
-    {
-      icon: 'fas fa-home',
-      label: 'Dashboard',
-      isOpen: false,
-      children: [
-        { icon: 'fas fa-chart-pie', label: 'Analytics' },
-        { icon: 'fas fa-tasks', label: 'Projects' },
-      ]
-    },
-    {
-      icon: 'fas fa-cog',
-      label: 'Settings',
-      isOpen: false,
-      children: [
-        { icon: 'fas fa-user', label: 'Profile' },
-        { icon: 'fas fa-lock', label: 'Security' },
-      ]
-    },
-    {
-      icon: 'fas fa-envelope',
-      label: 'Messages'
+  selectedLayer: string = '';
+
+   ngAfterViewInit() {
+      this.querySideBarFeatureLayersOptions();
+      // console.log("data above",this.data1)
+      
     }
-  ];
+  
+    private querySideBarFeatureLayersOptions() {
+      this.selectorService.querySelectorFeatureLayers().subscribe({
+        next: (data) => {
+          // console.log('Feature layers:', );
+          // this.data1 = data
+          // Process data here
+          this.selectorfeaturlayers.set(Object.values(data.data))
+          console.log("signal data",this.selectorfeaturlayers())
 
-  toggleSidebar() {
-    this.sidebarToggle.emit();
-  }
-
-  toggleMenuItem(item: MenuItem) {
-    // Only toggle if sidebar is not collapsed and item has children
-    if (!this.isSidebarCollapsed && item.children) {
-      item.isOpen = !item.isOpen;
+        },
+        error: (error) => {
+          console.error('Error fetching layers', error);
+        }
+      });
     }
-  }
+
+    private querySideBarAttributesOptions(layer:string) {
+      this.attributeselector.querySelectorAttributes(layer).subscribe({
+        next: (data) => {
+          // console.log('Feature layers:', );
+          // this.data1 = data
+          // Process data here
+          this.selectorattributes.set(Object.values(data.data))
+          // console.log("attributes signal data",this.selectorattributes())
+
+        },
+        error: (error) => {
+          console.error('Error fetching layers', error);
+        }
+      });
+    }
+
+    private querySideBarOperatorOptions(layer:string,attribute:string) {
+      this.operatorselector.querySelectorOperators(layer,attribute).subscribe({
+        next: (data) => {
+          // console.log('Feature layers:', );
+          // this.data1 = data
+          // Process data here
+          this.selectoroperators.set(Object.values(data.data))
+          console.log("operatores signal data",this.selectoroperators())
+
+        },
+        error: (error) => {
+          console.error('Error fetching layers', error);
+        }
+      });
+    }
+
+    onLayerSelect(event: Event) {
+      const selectedLayer = (event.target as HTMLSelectElement).value;
+      this.selectedLayer = selectedLayer;
+      this.querySideBarAttributesOptions(selectedLayer)
+      // console.log('Selected attributes:', this.selectorattributes());
+      // Add your logic here
+    }
+
+    onAttributeSelect(event: Event) {
+      const selectedattribute = (event.target as HTMLSelectElement).value;
+      this.querySideBarOperatorOptions(this.selectedLayer,selectedattribute)
+      // console.log('Selected attributes:', this.selectorattributes());
+      // Add your logic here
+    }
+ 
+  
 }
