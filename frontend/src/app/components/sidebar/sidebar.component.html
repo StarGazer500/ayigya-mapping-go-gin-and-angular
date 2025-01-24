@@ -4,13 +4,16 @@
         isSidebarCollapsed ? '' : 'Advanced Query'
       }}</a>
     </div>
+
+    
     <div class="sidebar-menu">
       <!-- <ul> -->
+        @if(isSidebarCollapsed===false){
        <div style="display: flex;;flex-direction: column;margin-left: 10px;gap: 10px;">
         <label>Feature Layers</label>
         
         <select style="width: 230px; height: 40px;" (change)="onLayerSelect($event)">
-          <option value="">Select Feature Layer</option>
+          <option value="All Feature Layers">All Feature Layers</option>
           @for (layer of selectorfeaturlayers(); track layer) {
             <option [value]="layer">{{ layer }}</option>
           }
@@ -18,7 +21,7 @@
         
         <label>Attributes</label>
         <select  style="width: 230px;height: 40px;" (change)="onAttributeSelect($event)">
-          <option value="">None</option>
+          <option value="None">None</option>
           @for (attribute of selectorattributes(); track attribute) {
             <option [value]="attribute">{{ attribute }}</option>
           }
@@ -26,20 +29,21 @@
       
 
         <label>Operators</label>
-        <select  style="width: 230px;height: 40px;">
-          <option value="">None</option>
+        <select  style="width: 230px;height: 40px;" (change)="onOperatorSelect($event)">
+          <option value="None">None</option>
           @for (operator of selectoroperators(); track operator) {
             <option [value]="operator">{{ operator }}</option>
           }
         </select>
 
         <label>Enter Value</label>
-        <input placeholder="Enter Value" style="border-radius: 5px;width: 220px;height: 30px;">
+        <input placeholder="Enter Value" style="border-radius: 5px;width: 220px;height: 30px;" (keyup)="onKey($event)">
       </div>
+   
 
       <div style="display:flex;left: 40px;position: relative;;margin-top: 10px;">
         <input type="submit" style="width: 150px;height: 40px;background-color:blue;border-radius: 10px;color: white;" (click)="onSubmitQueryClick()">/>
-      </div>
+      </div>}
 
          
         

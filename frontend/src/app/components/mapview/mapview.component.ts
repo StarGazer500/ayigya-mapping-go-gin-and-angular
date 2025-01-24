@@ -1,4 +1,5 @@
-import { Component, OnInit, AfterViewInit,input,SimpleChanges } from '@angular/core';
+import { Component, OnInit, AfterViewInit,input,SimpleChanges, signal } from '@angular/core';
+import {SimplesearchService} from '../../service/simplesearch.service'
 import * as L from 'leaflet';
 
 @Component({
@@ -8,7 +9,14 @@ import * as L from 'leaflet';
 })
 export class MapviewComponent implements OnInit, AfterViewInit {
   displaymapdata = input<any>("");
-  
+  geoJsonLayerGroup:any
+
+  simplesearchdata:any 
+
+  isVisible = signal<boolean>(false)
+  totalQueries = signal<string>('tested')
+
+  queryValue:string = ''
 
   private map!: L.Map;
   markers: L.Marker[] = [
@@ -23,13 +31,13 @@ export class MapviewComponent implements OnInit, AfterViewInit {
     attribution: '&copy; Google'
   });
 
-  constructor() {}
+  constructor(private simplesearchservice:SimplesearchService) {}
 
   ngOnInit() {}
 
   ngAfterViewInit() {
     this.initMap();
-    this.centerMap();
+    // this.centerMap();
   }
 
   private initMap() {
@@ -58,14 +66,21 @@ export class MapviewComponent implements OnInit, AfterViewInit {
     if (changes['displaymapdata']) {
       const currentValue = changes['displaymapdata'].currentValue;
       console.log("Data received in the Map view",currentValue)
+      
       this.addDataToMap(currentValue)
+      this.totalQueries.set(`${currentValue.length}`)
+      this.isVisible.set(true)
 
     
   }
  }
 
  private addDataToMap(data: any) {
-  const geoJsonLayerGroup = L.featureGroup();
+  if (this.geoJsonLayerGroup) {
+    this.map.removeLayer(this.geoJsonLayerGroup);
+    // layerControl.removeLayer(geoJsonLayerGroup);
+}
+  this.geoJsonLayerGroup = L.featureGroup();
 
  function formatKey(key: string): string {
       return key
@@ -93,9 +108,9 @@ export class MapviewComponent implements OnInit, AfterViewInit {
     const geoJsonLayer = L.geoJSON(data[i].geom, {
       style: () => ({
         // Default style
-        weight: 2,
-        color: '#000',
-        fillOpacity: 0.7
+        weight: 1,
+        color: 'yellow',
+        fillOpacity: 0.1
       }),
       onEachFeature: (feature, layer) => {
         var popupContent = '<div>';
@@ -113,39 +128,54 @@ export class MapviewComponent implements OnInit, AfterViewInit {
         popupContent += '</div>';
         layer.bindPopup(popupContent);
 
-        layer.on({
-          mouseover: (e) => {
-            // Type assertion to GeoJSON layer
-            const geoLayer = layer as L.GeoJSON;
-            geoLayer.setStyle({
-              weight: 5,
-              color: '#00b3b3',
-              fillOpacity: 0.9,
-              fillColor: '#4CAF50'
-            });
-          },
-          mouseout: () => {
-            // Reset to default style
-            const geoLayer = layer as L.GeoJSON;
-            geoLayer.setStyle({
-              weight: 2,
-              color: '#000',
-              fillOpacity: 0.7
-            });
-          }
-        });
+     
       }
     });
-    geoJsonLayerGroup.addLayer(geoJsonLayer);
+    this.geoJsonLayerGroup.addLayer(geoJsonLayer);
     
     // this.map.addLayer(geoJsonLayer);
   }  
-  geoJsonLayerGroup.addTo(this.map);
-    if (geoJsonLayerGroup.getLayers().length > 0) {
-      this.map.fitBounds(geoJsonLayerGroup.getBounds(), {
+  this.geoJsonLayerGroup.addTo(this.map);
+    if (this.geoJsonLayerGroup.getLayers().length > 0) {
+      this.map.fitBounds(this.geoJsonLayerGroup.getBounds(), {
           padding: [50, 50],
-          maxZoom: 15
+          maxZoom: 20
       });
   }
  }
+
+  onKey(event: KeyboardEvent) {
+    this.queryValue = (event.target as HTMLInputElement).value;
+    // console.log(inputValue);  // Log the input value to the console (optional)
+  }
+
+onEnterKey(event: KeyboardEvent): void {
+  if (event.key === 'Enter') {  // Check if the pressed key is Enter
+    this.querySimpleSearch(this.queryValue)
+    this.addDataToMap(this.simplesearchdata)
+    this.totalQueries.set(`${this.simplesearchdata.length}`)
+    this.isVisible.set(true)
+    // console.log('Enter key pressed!',this.queryValue);
+    // console.log('Input Value:', this.inputValue);  // Log the value of the input
+    // You can trigger other logic here, such as submitting the form
+  }
+}
+
+private querySimpleSearch(seachvalue:string) {
+  this.simplesearchservice.querySimpleSearchValue(seachvalue).subscribe({
+    next: (data) => {
+      this.simplesearchdata = data.data
+
+      // console.log('Feature layers:', );
+      // this.data1 = data
+      // Process data here
+      // this.selectorattributes.set(Object.values(data.data))
+      // console.log("attributes signal data",this.selectorattributes())
+
+    },
+    error: (error) => {
+      console.error('Error fetching layers', error);
+    }
+  });
+}
 }
