@@ -10,6 +10,7 @@
       <app-sidebar
         [isSidebarCollapsed]="isSidebarCollapsed"
         (sidebarToggle)="onSidebarToggle()"
+        (onDataChange)="handleDataChange($event)"
       >
       </app-sidebar>
       <button
@@ -27,7 +28,7 @@
   
     <main class="content" [ngClass]="{ 'content-expanded': isSidebarCollapsed }">
        <!-- <div class="content-inner"> -->
-        <app-mapview/>
+        <app-mapview [displaymapdata]='mapviewdatasignal()'/>
       <!-- </div> -->
       
     </main>
